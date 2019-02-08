@@ -29,11 +29,6 @@ class App extends Component {
     //TODO: Get previously added streams from local storage
   };
 
-  renderStreams = () => {
-    
-    
-  }
-
   render() {
     return (
       <div className='App'>
