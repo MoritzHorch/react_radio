@@ -20,6 +20,10 @@ class App extends Component {
           url: 'http://bbcmedia.ic.llnwd.net/stream/bbcmedia_radio3_mf_p',
         }
       ],
+      input: {
+        title: '',
+        url: '',
+      },
       playing: false,
       active: null,
       loading: false
@@ -30,8 +34,26 @@ class App extends Component {
     //TODO: Get previously added streams from local storage
   };
 
+  handleNewStreamInput = (event) => {
+    //TODO: Add better parsing
+    const cpyInput = this.state.input;
+    switch (event.target.id) {
+      case 'input_title':
+        cpyInput.title = event.target.value;
+        this.setState({ input: cpyInput });
+        break;
+      case 'input_url':
+        cpyInput.url = event.target.value;
+        this.setState({ input: cpyInput });
+        break;
+      default: break;
+    }
+  }
+
   handleStreamAdd = () => {
-    //TODO: Handle add of a stream
+    const cpyStreams = [...this.state.streams];
+    cpyStreams.push({ title: this.state.input.title, url: this.state.input.url });
+    this.setState({ streams: cpyStreams, input: { title: '', url: '' } });
   }
 
   handleStreamPlay = (id) => {
@@ -99,15 +121,15 @@ class App extends Component {
           </Grid.Row>
           <Grid.Row>
             <Grid.Column mobile={16} tablet={6} computer={4}>
-              <Input label='Title' fluid placeholder='Example: BBC Radio One' />
+              <Input value={this.state.input.title} id='input_title' label='Title' fluid placeholder='Example: BBC Radio One' onChange={(event) => this.handleNewStreamInput(event)} />
             </Grid.Column>
             <Grid.Column mobile={16} tablet={6} computer={4}>
-              <Input label='Stream URL' fluid placeholder='Example: http://bbcmedia.ic.llnwd.net/stream/bbcmedia_radio1_mf_p' />
+              <Input value={this.state.input.url} id='input_url' label='Stream URL' fluid placeholder='Example: http://bbcmedia.ic.llnwd.net/stream/bbcmedia_radio1_mf_p' onChange={(event) => this.handleNewStreamInput(event)} />
             </Grid.Column>
           </Grid.Row>
           <Grid.Row>
             <Grid.Column textAlign='center'>
-              <Button icon labelPosition='left'>
+              <Button icon labelPosition='left' onClick={() => this.handleStreamAdd()}>
                 <Icon name='music' />
                 Add stream
               </Button>
