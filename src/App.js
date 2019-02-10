@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Header, Grid, Button, Icon, Divider, List, Input, GridColumn } from 'semantic-ui-react';
+import { Header, Grid, Button, Icon, Divider, List, Input, GridColumn, Loader } from 'semantic-ui-react';
 import './App.css';
 
 class App extends Component {
@@ -25,7 +25,7 @@ class App extends Component {
         url: '',
       },
       playing: false,
-      active: null,
+      active: undefined,
       loading: false
     };
   }
@@ -57,19 +57,88 @@ class App extends Component {
   }
 
   handleStreamPlay = (id) => {
-    this.setState({ active: id })
-    if (this.state.active != null) {
+    this.setState({ active: id, playing: false });
+    if (this.state.active !== undefined) {
       this.playerRef.current.load();
     }
   }
 
   handleStreamRemove = (id) => {
     if (id === this.state.active) {  //Check if the stream to delete is currently playing
-      this.setState({ active: null });
+      this.setState({ active: undefined });
     }
     const cpyStreams = [...this.state.streams];
     cpyStreams.splice(id, 1)
     this.setState({ streams: cpyStreams });
+  }
+
+  renderActiveMedia = () => {
+    if (this.state.active !== undefined) {
+      return (
+        <>
+          <Header as='h2'>
+            <Header.Content>Enjoy listening!</Header.Content>
+          </Header>
+          <audio ref={this.playerRef} autoPlay onLoadStart={() => this.setState({ loading: true })} onCanPlay={() => this.setState({ loading: false, playing: true })}>
+            <source src={this.state.streams[this.state.active].url} />
+          </audio>
+        </>
+      );
+    } else {
+      return (
+        <Header as='h2'>
+          <Header.Content>No stream is selected yet!</Header.Content>
+        </Header>
+      );
+    }
+  }
+
+  renderMediaButtons = () => {
+    if (this.state.loading === false) {
+      if (this.state.playing) {
+        return (
+          <Button icon labelPosition='left' onClick={() => {
+            this.playerRef.current.pause();
+            this.setState({ playing: false });
+          }}>
+            <Icon name='pause' />
+            Pause
+          </Button>
+        );
+      } else {
+        return (
+          <Button icon labelPosition='left' onClick={() => {
+            this.playerRef.current.play();
+            this.setState({ playing: true });
+          }}>
+            <Icon name='play' />
+            Play
+          </Button>
+        );
+      }
+    } else {
+      return <Loader active>Preparing your entertainment!</Loader>;
+    }
+  }
+
+  renderStreamList = () => {
+    return (
+      <List divided verticalAlign='middle'>
+        {this.state.streams.map((entry, id) => (
+          <List.Item key={id}>
+            <List.Content floated='right'>
+              <Button icon onClick={() => this.handleStreamPlay(id)}>
+                <Icon name='play' />
+              </Button>
+              <Button icon onClick={() => this.handleStreamRemove(id)}>
+                <Icon name='delete' />
+              </Button>
+            </List.Content>
+            <List.Header>{entry.title}</List.Header>
+          </List.Item>
+        ))}
+      </List>
+    );
   }
 
   render() {
@@ -77,6 +146,7 @@ class App extends Component {
       <div className='App'>
         <Grid centered>
           <Grid.Row textAlign='center'>
+
             <Grid.Column mobile={16} tablet={12} computer={12}>
               <Header as='h1' className='App-header'>
                 <Header.Content >React Radio</Header.Content>
@@ -87,29 +157,13 @@ class App extends Component {
           { /* Player */}
           <Grid.Row >
             <Grid.Column textAlign='center' mobile={16} tablet={12} computer={12}>
-              {this.state.active != null ? (
-                <audio ref={this.playerRef} autoPlay onLoadStart={() => this.setState({ loading: true })} onCanPlay={() => this.setState({ loading: false })}>
-                  <source src={this.state.streams[this.state.active].url} />
-                </audio>
-              ) : (
-                  'No Stream selected yet!'
-                )}
+              {this.renderActiveMedia()}
             </Grid.Column>
           </Grid.Row>
 
           <Grid.Row>
             <GridColumn textAlign='center' mobile={16} tablet={12} computer={8}>
-              {this.state.playing ? (
-                <Button icon labelPosition='left'>
-                  <Icon name='pause' />
-                  Pause
-                </Button>
-              ) : (
-                  <Button icon labelPosition='left'>
-                    <Icon name='play' />
-                    Play
-                </Button>
-                )}
+              {this.state.active !== undefined ? (this.renderMediaButtons()) : (null)}
             </GridColumn>
           </Grid.Row>
 
@@ -137,22 +191,7 @@ class App extends Component {
           </Grid.Row>
           <Grid.Row>
             <GridColumn mobile={16} tablet={12} computer={8}>
-              <List divided verticalAlign='middle'>
-                {this.state.streams.map((entry, id) => (
-
-                  <List.Item key={id}>
-                    <List.Content floated='right'>
-                      <Button icon onClick={() => this.handleStreamPlay(id)}>
-                        <Icon name='play' />
-                      </Button>
-                      <Button icon onClick={() => this.handleStreamRemove(id)}>
-                        <Icon name='delete' />
-                      </Button>
-                    </List.Content>
-                    <List.Header>{entry.title}</List.Header>
-                  </List.Item>
-                ))}
-              </List>
+              {this.renderStreamList()}
             </GridColumn>
           </Grid.Row>
         </Grid>
