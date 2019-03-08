@@ -1,4 +1,7 @@
 ## React Radio
+
+[![Build Status](https://travis-ci.org/MoritzHorch/react_radio.svg?branch=master)](https://travis-ci.org/MoritzHorch/react_radio)
+
 Hello there (General Kenobi), this React App is just a personal project to experiment with ...
 
 - React
